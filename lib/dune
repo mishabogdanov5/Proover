@@ -1,0 +1,7 @@
+(library
+ (name proof)
+ (modules f)
+ (libraries angstrom)
+ (inline_tests)
+ (preprocess
+  (pps ppx_expect)))
