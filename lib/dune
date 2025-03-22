@@ -1,5 +1,6 @@
 (library
  (name proof)
+ (public_name proof.lib)
  (modules f)
  (libraries angstrom)
  (inline_tests)
