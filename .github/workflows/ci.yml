@@ -29,7 +29,7 @@ jobs:
             opam-${{ runner.os }}-
 
       - name: Build Docker image
-        run: docker build -t proof-image .
+        run: docker build --cache-from proof-image  -t proof-image .
 
       - name: Run Docker container and build project
         run: docker run --rm proof-image
