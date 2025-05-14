@@ -1,6 +1,5 @@
 build: 
 	dune build
-tests: test
 
 test: 
 	dune runtest

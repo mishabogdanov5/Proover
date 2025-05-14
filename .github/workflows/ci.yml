@@ -1,38 +1,55 @@
-name: CI
+name: Assembl-Test
 
 on:
   push:
     branches:
       - master
+      - dev
   pull_request:
-    branches:
-      - master
+    branches: ["master"]
 
 jobs:
-  build:
+  test:
+    name: Run Tests
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
-
-      - name: Set up Docker
-        uses: docker/setup-buildx-action@v2
-
-      - name: Cache OPAM dependencies
-        id: cache-opam
+      - name: Checkout
+        uses: actions/checkout@v4
+    
+      - name: Cache OCaml Environment
+        id: cache-ocaml
         uses: actions/cache@v3
         with:
           path: ~/.opam
-          key: opam-${{ runner.os }}-${{ hashFiles('**/opam') }}
-          restore-keys: |
-            opam-${{ runner.os }}-
+          key: ${{ runner.os }}-ocaml-static-4.14
 
-      - name: Build Docker image
-        run: docker build --cache-from proof-image  -t proof-image .
+      - name: Install apt dependencies
+        if: steps.cache-ocaml.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ocaml opam binutils-riscv64-linux-gnu qemu-user
+          opam init --disable-sandboxing --yes
+          opam switch create 4.14.1
+          eval $(opam env)
 
-      - name: Run Docker container and build project
-        run: docker run --rm proof-image
+      - name: Dependencies
+        if: steps.cache-ocaml.outputs.cache-hit != 'true'
+        run: |
+          opam install angstrom
+          opam install dune alcotest zanuda --yes
+
+      - name: Build
+        run: |
+          eval $(opam env)
+          dune build @check
 
       - name: Run tests
-        run: docker run --rm proof-image dune runtest
+        run: |
+          eval $(opam env)
+          dune runtest
+
+      - name: Run linter
+        run: |
+          eval $(opam env)
+          zanuda -dir .

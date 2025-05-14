@@ -1,7 +1,7 @@
 (library
  (name proof)
  (public_name proof.lib)
- (modules f test)
+ (modules parser_log)
  (libraries angstrom)
  (inline_tests)
  (preprocess
