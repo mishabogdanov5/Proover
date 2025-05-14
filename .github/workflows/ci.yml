@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - dev
   pull_request:
     branches: ["master"]
 
@@ -23,6 +22,11 @@ jobs:
         with:
           path: ~/.opam
           key: ${{ runner.os }}-ocaml-static-4.14
+    
+      - name: Ensure OPAM is available and install apt dependencies 
+        if: steps.cache-ocaml.outputs.cache-hit == 'true'
+        run: |
+          sudo apt-get update
 
       - name: Install apt dependencies
         if: steps.cache-ocaml.outputs.cache-hit != 'true'
@@ -36,7 +40,7 @@ jobs:
       - name: Dependencies
         if: steps.cache-ocaml.outputs.cache-hit != 'true'
         run: |
-          opam install angstrom
+          opam install angstrom --yes
           opam install dune alcotest zanuda --yes
 
       - name: Build
